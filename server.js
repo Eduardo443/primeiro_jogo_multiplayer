@@ -17,7 +17,7 @@ game.addfruit({fruitId: 'fruit2', fruitX: 8, fruitY: 8})
 game.addPlayer({playerId: 'player2', playerX: 6, playerY: 5})
  // end -------------------
 
-sockets.on('connections', (socket) => {
+sockets.on('connection', (socket) => {
     const playerId = socket.id
     console.log(`Player connected on Server With Id: ${playerId}`)
 
