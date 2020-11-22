@@ -9,19 +9,34 @@ const sockets = io(server)
 
 app.use(express.static('public'))
 
-//test adding player manualy
 const game = createGame()
-game.addfruit({fruitId: 'fruit1', fruitX: 1, fruitY: 0})
-game.addPlayer({playerId: 'player1', playerX: 0, playerY: 0})
-game.addfruit({fruitId: 'fruit2', fruitX: 8, fruitY: 8})
-game.addPlayer({playerId: 'player2', playerX: 6, playerY: 5})
- // end -------------------
+game.start()
 
-sockets.on('connections', (socket) => {
+game.subscribe((command) => {
+    console.log(`Emitting ${command.type}`)
+    sockets.emit(command.type, command)
+})
+
+sockets.on('connection', (socket) => {
     const playerId = socket.id
     console.log(`Player connected on Server With Id: ${playerId}`)
 
+    game.addPlayer({playerId: playerId})
+    // console.log(game.state)
+
     socket.emit('setup', game.state)
+
+    socket.on('disconnect', () => {
+        game.removePlayer({playerId: playerId})
+        console.log(`player desconnected: ${playerId}`)
+    })
+
+    sockets.on('move-player', command => {
+        command.playerId = playerId
+        command.type = 'move-player'
+
+        game.movePlayer(command)
+    })
 })
 
 server.listen(8080, () => {
